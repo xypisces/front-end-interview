@@ -88,3 +88,4 @@ typings/
 .dynamodb/
 
 .temp/
+/docs/.vuepress/dist
