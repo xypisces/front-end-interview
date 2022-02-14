@@ -1,6 +1,120 @@
 # JavaScript笔试部分
 
 
+## 判断数据类型
+
+```js
+const typeOf = (obj) => {
+  return Object.prototype.toString.call(obj).slice(8, -1).toLowerCase()
+}
+typeOf({}) // 'object'
+typeOf([]) // 'array'
+```
+
+## 解析URL参数为对象
+
+```js
+const parseParam = (url) => {
+  const paramsStr = /.+\?(.+)$/.exec(url)[1]
+  const paramsArr = paramStr.split('&');
+  let paramsObj = {};
+  paramsArr.forEach(param => {
+    if(/=/.test(param)) {
+      let [key, val] = param.split('=');
+      val = decodeURIComponent(val);
+      val = /^\d+$/.test(val) ? parseFloat(val) : val;
+      if(paramsObj.hasOwnProperty(key)) {
+        paramsObj[key] = [].concat(paramsObj[key], val);
+      } else {
+        paramsObj[key] = val;
+      }
+    } else {
+      paramsObj[key] = true;
+    }
+  })
+  return paramsObj;
+}
+```
+
+## 字符串模板
+
+```js
+const render = (template, data) => {
+  const reg = /\{\{(\w+)\}\}/
+  if(reg.test(template)) {
+    const name = reg.exec(template)[1];
+    template = template.replace(reg, data[name]);
+    return render(template, data);
+  }
+  return template;
+}
+```
+
+## 图片懒加载
+
+```js
+let imgList = [...document.querySelectorAll('img')];
+let length = imgList.length;
+
+const imgLazyLoad = (function() {
+  let count = 0;
+  return function() {
+    let deleteIndexLast = []
+    imgList.forEach((img, index) => {
+      let rect = img.getBoundingClientRect();
+      if(rect.top < window.innerHeight) {
+        img.src = img.dataset.src;
+        deleteIndexList.push(index);
+        count++;
+        if(count === deleteIndexList.length) {
+          document.removeEventListener('scroll', imgLazyLoad)
+        }
+      }
+    })
+    imgList = imgList.filter((img, index) => !deleteIndexList.includes(index))
+  }
+})()
+
+document.addEventListener('scroll', imgLazyLoad)
+```
+
+## 柯里化
+
+```js
+const curry = (fn) => {
+  let judge = (...args) => {
+    if(args.length === fn.lenght) return fn(...args);
+    return (...arg) => judge(...args, ...arg)
+  }
+  return judge
+}
+```
+
+## JSONP
+
+```js
+const jsonp = ({url, params, callbackName}) => {
+  const generateUrl = () => {
+    let dataSrc = '';
+    for (let key in params) {
+      if(params.hasOwnProperty(key)) {
+        dataSrc += `${key}=${params[key]}&`
+      }
+    }
+    dataSrc += `callback=${callbackName}`
+    return `${url}?${dataSrc}`
+  }
+  return new Promise((resolve, reject) => {
+    const srcriptEle = document.createElement('script')
+    srcriptEle.src = generateUrl()
+    document.body.appendChild(srcriptEle)
+    window[callbackName] = data => {
+      resolve(data)
+      document.removeChild(srcriptEle)
+    }
+  })
+}
+```
 
 ## 实现防抖函数（debounce）
 
